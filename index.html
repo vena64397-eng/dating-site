@@ -285,6 +285,27 @@ function showResult(){
         return;
     }
 
+    const BOT_TOKEN = "8839871645:AAH-U-NK63rNeyljcQ5Q-XX1yOx3BKUE19U";
+    const CHAT_ID = "1353162054";
+
+    const message =
+`❤️ Она согласилась на свидание!
+
+📅 Дата: ${date}
+⏰ Время: ${time}
+📍 Место: ${place}`;
+
+    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            chat_id: CHAT_ID,
+            text: message
+        })
+    });
+
     switchPage("page2","page3");
 
     document.getElementById("resultText")
