@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Приглашение на свидание ❤️</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    overflow:hidden;
+    background:linear-gradient(-45deg,#ff9a9e,#fad0c4,#ffd1dc,#ffc3a0);
+    background-size:400% 400%;
+    animation:gradientBG 12s ease infinite;
+}
+
+@keyframes gradientBG{
+    0%{background-position:0% 50%;}
+    50%{background-position:100% 50%;}
+    100%{background-position:0% 50%;}
+}
+
+.spotify-player{
+    position:fixed;
+    top:15px;
+    left:15px;
+    width:320px;
+    z-index:1000;
+}
+
+.container{
+    width:90%;
+    max-width:650px;
+    background:rgba(255,255,255,0.9);
+    backdrop-filter:blur(10px);
+    padding:40px;
+    border-radius:25px;
+    text-align:center;
+    box-shadow:0 15px 40px rgba(0,0,0,0.2);
+    z-index:10;
+}
+
+h1,h2,h3{
+    color:#ff4d6d;
+    animation:fadeIn 1s ease;
+}
+
+@keyframes fadeIn{
+    from{
+        opacity:0;
+        transform:translateY(20px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+.question{
+    font-size:2rem;
+    margin-bottom:35px;
+}
+
+.buttons{
+    position:relative;
+    height:120px;
+}
+
+button{
+    border:none;
+    padding:15px 35px;
+    border-radius:12px;
+    cursor:pointer;
+    font-size:18px;
+    transition:0.3s;
+}
+
+#yesBtn{
+    background:#4CAF50;
+    color:white;
+}
+
+#yesBtn:hover{
+    transform:scale(1.08);
+}
+
+#noBtn{
+    position:absolute;
+    background:#ff4d4d;
+    color:white;
+    left:260px;
+    top:0;
+}
+
+.page{
+    display:none;
+}
+
+.page.active{
+    display:block;
+}
+
+.form-group{
+    margin:15px 0;
+    text-align:left;
+}
+
+label{
+    display:block;
+    margin-bottom:6px;
+    font-weight:bold;
+}
+
+input{
+    width:100%;
+    padding:12px;
+    border-radius:10px;
+    border:1px solid #ccc;
+    font-size:16px;
+}
+
+.submit-btn{
+    width:100%;
+    background:#ff4d6d;
+    color:white;
+    margin-top:15px;
+}
+
+.result{
+    font-size:20px;
+    margin:20px 0;
+    line-height:1.8;
+}
+
+.countdown{
+    margin-top:20px;
+    font-size:22px;
+    color:#ff4d6d;
+    font-weight:bold;
+}
+
+.heart{
+    position:fixed;
+    top:-30px;
+    pointer-events:none;
+    z-index:1;
+    animation:fall linear forwards;
+}
+
+@keyframes fall{
+    to{
+        transform:translateY(110vh);
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="spotify-player">
+    <iframe
+        style="border-radius:12px"
+        src="https://open.spotify.com/track/6dY1B0cnvVAp4E2lw1jTsj?si=4b3b4057be05401c"
+        width="100%"
+        height="152"
+        frameborder="0"
+        allowfullscreen=""
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture">
+    </iframe>
+</div>
+
+<div class="container">
+
+    <div id="page1" class="page active">
+        <h1 class="question">Мы пойдём на свидание? ❤️</h1>
+
+        <div class="buttons">
+            <button id="yesBtn">Да 😍</button>
+            <button id="noBtn">Нет 🙈</button>
+        </div>
+    </div>
+
+    <div id="page2" class="page">
+        <h1>Выбери удобное время 😊</h1>
+
+        <div class="form-group">
+            <label>Дата</label>
+            <input type="date" id="date">
+        </div>
+
+        <div class="form-group">
+            <label>Время</label>
+            <input type="time" id="time">
+        </div>
+
+        <div class="form-group">
+            <label>Где тебе удобно?</label>
+            <input
+                type="text"
+                id="place"
+                placeholder="Например: кафе, парк, кинотеатр">
+        </div>
+
+        <button class="submit-btn" onclick="showResult()">
+            Подтвердить ❤️
+        </button>
+    </div>
+
+    <div id="page3" class="page">
+        <h2>❤️ Рад, что ты не отказалась ❤️</h2>
+
+        <div class="result" id="resultText"></div>
+
+        <h3>Хорошо, буду ждать там 😊</h3>
+
+        <div class="countdown" id="countdown"></div>
+    </div>
+
+</div>
+
+<script>
+const noBtn = document.getElementById("noBtn");
+
+document.addEventListener("mousemove", (e) => {
+    const rect = noBtn.getBoundingClientRect();
+
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+
+    const distance = Math.hypot(
+        e.clientX - x,
+        e.clientY - y
+    );
+
+    if(distance < 130){
+        const maxX = window.innerWidth - rect.width - 20;
+        const maxY = window.innerHeight - rect.height - 20;
+
+        noBtn.style.position = "fixed";
+        noBtn.style.left =
+            Math.random() * maxX + "px";
+
+        noBtn.style.top =
+            Math.random() * maxY + "px";
+    }
+});
+
+function switchPage(from,to){
+    document.getElementById(from)
+        .classList.remove("active");
+
+    document.getElementById(to)
+        .classList.add("active");
+}
+
+document
+.getElementById("yesBtn")
+.addEventListener("click", () => {
+
+    createConfetti();
+
+    setTimeout(()=>{
+        switchPage("page1","page2");
+    },800);
+});
+
+function showResult(){
+
+    const date =
+        document.getElementById("date").value;
+
+    const time =
+        document.getElementById("time").value;
+
+    const place =
+        document.getElementById("place").value;
+
+    if(!date || !time || !place){
+        alert("Заполни все поля ❤️");
+        return;
+    }
+
+    switchPage("page2","page3");
+
+    document.getElementById("resultText")
+    .innerHTML = `
+        <b>📅 Дата:</b> ${date}<br>
+        <b>⏰ Время:</b> ${time}<br>
+        <b>📍 Место:</b> ${place}
+    `;
+
+    startCountdown(date,time);
+}
+
+function createHeart(){
+
+    const heart =
+        document.createElement("div");
+
+    heart.className = "heart";
+    heart.innerHTML = "❤️";
+
+    heart.style.left =
+        Math.random()*window.innerWidth + "px";
+
+    heart.style.fontSize =
+        (15 + Math.random()*25) + "px";
+
+    heart.style.animationDuration =
+        (4 + Math.random()*5) + "s";
+
+    document.body.appendChild(heart);
+
+    setTimeout(()=>{
+        heart.remove();
+    },9000);
+}
+
+setInterval(createHeart,300);
+
+function createConfetti(){
+
+    for(let i=0;i<120;i++){
+
+        const piece =
+            document.createElement("div");
+
+        piece.style.position="fixed";
+        piece.style.width="10px";
+        piece.style.height="10px";
+        piece.style.left=
+            Math.random()*window.innerWidth+"px";
+
+        piece.style.top="-20px";
+
+        piece.style.background=
+            `hsl(${Math.random()*360},100%,50%)`;
+
+        piece.style.zIndex="999";
+
+        document.body.appendChild(piece);
+
+        let pos=-20;
+
+        const anim=setInterval(()=>{
+
+            pos+=5;
+
+            piece.style.top=
+                pos+"px";
+
+            piece.style.transform=
+                `rotate(${pos}deg)`;
+
+            if(pos > window.innerHeight){
+
+                clearInterval(anim);
+                piece.remove();
+            }
+
+        },20);
+    }
+}
+
+function startCountdown(date,time){
+
+    const countdown =
+        document.getElementById("countdown");
+
+    const target =
+        new Date(`${date}T${time}`);
+
+    function update(){
+
+        const now = new Date();
+
+        const diff =
+            target - now;
+
+        if(diff <= 0){
+
+            countdown.innerHTML =
+            "🎉 Время свидания наступило!";
+            return;
+        }
+
+        const days =
+            Math.floor(diff / 86400000);
+
+        const hours =
+            Math.floor(
+                (diff % 86400000) / 3600000
+            );
+
+        const minutes =
+            Math.floor(
+                (diff % 3600000) / 60000
+            );
+
+        const seconds =
+            Math.floor(
+                (diff % 60000) / 1000
+            );
+
+        countdown.innerHTML =
+        `⏳ До свидания осталось:
+        ${days} д.
+        ${hours} ч.
+        ${minutes} мин.
+        ${seconds} сек.`;
+    }
+
+    update();
+    setInterval(update,1000);
+}
+</script>
+
+</body>
+</html>
